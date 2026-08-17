@@ -1,0 +1,94 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible,frame=single}
+\setlist{nosep}
+
+\begin{document}
+
+\begin{center}
+  {\zihao{-2}\bfseries 人工智能工具使用详情}\\[4pt]
+  {\zihao{-4}（第一届天津市五校数学建模联赛 A 题）}
+\end{center}
+
+\section*{一、所用 AI 工具名称与版本}
+
+本参赛队使用的 AI 工具为：
+
+\begin{itemize}
+  \item \textbf{工具名称：}Claude（Anthropic 大语言模型 AI 助手）；
+  \item \textbf{版本/型号：}Claude（Sonnet 系列模型）；
+  \item \textbf{开发机构：}Anthropic（Anthropic PBC）；
+  \item \textbf{使用日期：}2026-08-16。
+\end{itemize}
+
+\section*{二、具体使用目的和环节}
+
+按照《第一届天津市五校数学建模联赛人工智能工具使用规定》第三条要求，本参赛队的\textbf{核心建模与分析由参赛队独立完成}，AI 工具仅用于以下两个辅助环节：
+
+\begin{enumerate}
+  \item \textbf{论文插图绘制}：使用 AI 工具辅助编写 matplotlib 绘图脚本，生成论文中的全部插图（四个算例问题一/问题三的路径规划图、各无人机负载对比柱状图，以及禁飞区绕行几何示意图等）；
+  \item \textbf{求解程序代码编写与调试}：使用 AI 工具辅助编写、排错与优化求解程序源代码（\texttt{solve3.py}、\texttt{zones.py}、\texttt{p3b.py}、\texttt{master.py}）。
+\end{enumerate}
+
+除此之外，问题的数学建模（min--max mTSP 模型、$N_{\min}$ 下界推导、字典序双目标处理、绕行几何建模）与结果分析均由参赛队独立完成。
+
+\section*{三、关键交互记录（重要提示词与回复摘要）}
+
+\textbf{交互 1（程序编写）：}
+
+\begin{lstlisting}[language={},caption={提示词 1}]
+请根据附件1的巡检点坐标与巡检等级，编写一个多无人机协同巡检的
+min-max mTSP 求解器：将I/II/III级巡检点按3/2/1次复制为巡检作业，
+以最长无人机工作时间最小化为目标，采用 k-means++ 聚类、角度扫描和
+巨环分割三种初始解，配合 relocate/swap/2-opt 局部搜索求解。
+\end{lstlisting}
+
+回复摘要：AI 给出了基于 numpy 的时间距离矩阵构建、三类初始解构造与字典序局部搜索的完整代码框架，并解释了各算子的作用。
+
+\textbf{交互 2（几何建模）：}
+
+\begin{lstlisting}[language={},caption={提示词 2}]
+请给出圆形禁飞区绕行的最短路径公式：航段两点在圆外时，求切线+圆弧
+绕行路径长度，并判断线段是否与圆相交，返回绕行相对直线的额外距离。
+\end{lstlisting}
+
+回复摘要：AI 给出了线段-圆相交判定、$d_u$、$d_v$、$\alpha=\arccos(r/d_u)$、$\beta=\arccos(r/d_v)$、$\varphi=\theta-\alpha-\beta$ 与绕行长度 $L=\sqrt{d_u^2-r^2}+\sqrt{d_v^2-r^2}+r\varphi$ 的公式及对应代码。
+
+\textbf{交互 3（时间窗调度）：}
+
+\begin{lstlisting}[language={},caption={提示词 3}]
+禁飞区只在时间窗内活动，请实现时间感知的调度：按"最早可行服务"对
+每架无人机的作业序列重排，并用带等待时间的 2-opt 缩短完成时刻。
+\end{lstlisting}
+
+回复摘要：AI 给出了贪心重排与 2-opt 的实现，并在返回时补充了巡检点位于活动禁飞区内需等待至解禁时刻的处理。
+
+\textbf{交互 4（绘图与结果输出）：}
+
+\begin{lstlisting}[language={},caption={提示词 4}]
+请编写总控脚本，运行三个问题并把结果写入 result1/2/3.xlsx，同时绘制
+四个算例的路径图与负载对比图。
+\end{lstlisting}
+
+回复摘要：AI 给出了总控脚本，包括 openpyxl 写表、matplotlib 绘图与结果汇总。
+
+\section*{四、采纳和人工修改情况}
+
+\begin{enumerate}
+  \item \textbf{采纳情况}：AI 提供的算法框架（三类初始解、局部搜索、绕行公式、时间感知调度）基本思路被采纳，成为附录 B 程序的基础。
+  \item \textbf{人工修改情况}：
+  \begin{enumerate}
+    \item 修正了问题三时刻表中到达/离开时刻的记录方式（原代码仅记录到达时刻，人工补充了服务时长以得到离开时刻）；
+    \item 修正了绘图时坐标索引错位的问题（基地坐标以 0 号索引而非 $-1$ 号索引访问）；
+    \item 针对大规模算例运行超时的问题，将问题三的再均衡环节由``逐候选重排''改为``单作业迁移直接评估''，显著降低计算量；
+    \item 统一了时间单位（小时）与距离单位（$100\ \mathrm{m}$）换算，核对全部输出数据与论文表格一致。
+  \end{enumerate}
+  \item \textbf{结果核验}：所有由 AI 辅助生成的代码与图表，其输出结果均由参赛队与手工/独立计算核对无误后方才采用。
+\end{enumerate}
+
+\end{document}
